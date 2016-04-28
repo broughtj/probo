@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: probo
+Version: 0.1
+Summary: The Probo Option Pricing Module
+Home-page: https://github.com/broughtj/probo
+Author: Tyler J. Brough
+Author-email: tyler.brough@usu.edu
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: option pricing object-oriented design patterns Monte Carlo Binomial Black-Schols
+Platform: UNKNOWN
