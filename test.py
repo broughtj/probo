@@ -1,7 +1,6 @@
-import probo
-from probo.engine import BinomialPricingEngine, EuropeanBinomialPricer
 from probo.marketdata import MarketData
 from probo.payoff import VanillaPayoff, call_payoff
+from probo.engine import BinomialPricingEngine, EuropeanBinomialPricer
 from probo.facade import OptionFacade
 
 ## Set up the market data
