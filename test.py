@@ -1,6 +1,6 @@
 from probo.marketdata import MarketData
 from probo.payoff import VanillaPayoff, call_payoff
-from probo.engine import BinomialPricingEngine, EuropeanBinomialPricer
+from probo.engine import BinomialPricingEngine, EuropeanBinomialPricer, BlackScholesPricingEngine, BlackScholesPricer
 from probo.facade import OptionFacade
 
 ## Set up the market data
@@ -18,9 +18,18 @@ the_call = VanillaPayoff(expiry, strike, call_payoff)
 ## Set up the European Binomial pricer
 steps = 200
 pricer = EuropeanBinomialPricer
-the_engine = BinomialPricingEngine(steps, pricer) 
+bi_engine = BinomialPricingEngine(steps, pricer) 
 
 ## Calculate the price
-the_option = OptionFacade(the_call, the_engine, the_data)
-price = the_option.price()
-print("The call price is: {0:.3f}".format(price))
+option1 = OptionFacade(the_call, bi_engine, the_data)
+price1 = option1.price()
+print("The call price via Binomial is: {0:.3f}".format(price1))
+
+## Set up the Black-Scholes pricer
+#bs_engine = BlackScholesPricingEngine(BlackScholesPayoffType.call, BlackScholesPricer)
+bs_engine = BlackScholesPricingEngine("call", BlackScholesPricer)
+option2 = OptionFacade(the_call, bs_engine, the_data)
+price2 = option2.price()
+print("The call price via Black-Scholes is: {0:.3f}".format(price2))
+
+
