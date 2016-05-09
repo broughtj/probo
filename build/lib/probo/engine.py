@@ -56,8 +56,36 @@ def EuropeanBinomialPricer(pricing_engine, option, data):
      
     return price 
 
+
 def AmericanBinomialPricer(engine):
-    return np.pi # put the real thing here!
+    expiry = option.expiry
+    strike = option.strike
+    (spot, rate, volatility, dividend) = data.get_data()
+    steps = pricing_engine.steps
+    nodes = steps + 1
+    dt = expiry / steps 
+    u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
+    d = np.exp((rate * dt) - volatility * np.sqrt(dt))
+    pu = (np.exp(rate * dt) - d) / (u - d)
+    pd = 1 - pu
+    disc = np.exp(-rate * expiry)
+    dpu = disc * pu
+    dpd - disc * pd
+
+    Ct = np.zeros(nodes)
+    St = np.zeros(nodes)
+
+    for i in range(nodes):
+        St[i] = spot * (u ** (steps - i)) * (d ** i)
+        Ct[i] = option.payoff(St[i])
+
+    for i in range((steps - 1), -1, -1):
+        for j in range(i+1):
+            Ct[j] = dpu * Ct[j] + dpd * Ct[j+1]
+            St[j] = St[j] / u
+            Ct[j] = np.maximum(Ct[j], option.payoff(St[j]))
+
+    return Ct[0]
 
 
 class MonteCarloEngine(PricingEngine):
