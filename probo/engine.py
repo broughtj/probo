@@ -57,20 +57,20 @@ def EuropeanBinomialPricer(pricing_engine, option, data):
     return price 
 
 
-def AmericanBinomialPricer(engine):
+def AmericanBinomialPricer(pricingengine, option, data):
     expiry = option.expiry
     strike = option.strike
     (spot, rate, volatility, dividend) = data.get_data()
-    steps = pricing_engine.steps
+    steps = pricingengine.steps
     nodes = steps + 1
     dt = expiry / steps 
     u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
     d = np.exp((rate * dt) - volatility * np.sqrt(dt))
     pu = (np.exp(rate * dt) - d) / (u - d)
     pd = 1 - pu
-    disc = np.exp(-rate * expiry)
+    disc = np.exp(-rate * dt)
     dpu = disc * pu
-    dpd - disc * pd
+    dpd = disc * pd
 
     Ct = np.zeros(nodes)
     St = np.zeros(nodes)
