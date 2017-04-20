@@ -119,6 +119,22 @@ def BlackScholesDelta(spot, t, strike, expiry, volatility, rate, dividend):
     d1 = (np.log(spot/strike) + (rate - dividend + 0.5 * volatility * volatility) * tau) / (volatility * np.sqrt(tau))
     delta = np.exp(-dividend * tau) * norm.cdf(d1) 
     return delta
+
+def NaiveMonteCarloPricer(engine, option, data):
+    expiry = option.expiry
+    strike = option.strike
+    (spot, rate, vol, div) = data.get_data()
+    replications = engine.replications
+    dt = expiry / engine.time_steps
+    disc = np.exp(-(rate - div) * dt)
+    
+    z = np.random.normal(size = replications)
+    spotT = spot * np.exp((rate - div) * dt + vol * np.sqrt(dt) * z)
+    payoffT = option.payoff(spotT)
+
+    prc = payoffT.mean() * disc
+
+    return prc
     
 def ControlVariatePricer(engine, option, data):
     expiry = option.expiry
