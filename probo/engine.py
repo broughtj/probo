@@ -135,6 +135,25 @@ def NaiveMonteCarloPricer(engine, option, data):
     prc = payoffT.mean() * disc
 
     return prc
+
+def AntitheticMonteCarloPricer(engine, option, data):
+    expiry = option.expiry
+    strike = option.strike
+    (spot, rate, vol, div) = data.get_data()
+    replications = engine.replications
+    dt = expiry / engine.time_steps
+    disc = np.exp(-(rate - div) * dt)
+    
+    z1 = np.random.normal(size = replications)
+    z2 = -z1
+    z = np.concatenate((z1,z2))
+    spotT = spot * np.exp((rate - div) * dt + vol * np.sqrt(dt) * z)
+    payoffT = option.payoff(spotT)
+
+    prc = payoffT.mean() * disc
+
+    return prc
+
     
 def ControlVariatePricer(engine, option, data):
     expiry = option.expiry

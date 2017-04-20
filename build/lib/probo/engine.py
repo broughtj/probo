@@ -57,20 +57,20 @@ def EuropeanBinomialPricer(pricing_engine, option, data):
     return price 
 
 
-def AmericanBinomialPricer(engine):
+def AmericanBinomialPricer(pricingengine, option, data):
     expiry = option.expiry
     strike = option.strike
     (spot, rate, volatility, dividend) = data.get_data()
-    steps = pricing_engine.steps
+    steps = pricingengine.steps
     nodes = steps + 1
     dt = expiry / steps 
     u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
     d = np.exp((rate * dt) - volatility * np.sqrt(dt))
     pu = (np.exp(rate * dt) - d) / (u - d)
     pd = 1 - pu
-    disc = np.exp(-rate * expiry)
+    disc = np.exp(-rate * dt)
     dpu = disc * pu
-    dpd - disc * pd
+    dpd = disc * pd
 
     Ct = np.zeros(nodes)
     St = np.zeros(nodes)
@@ -119,6 +119,22 @@ def BlackScholesDelta(spot, t, strike, expiry, volatility, rate, dividend):
     d1 = (np.log(spot/strike) + (rate - dividend + 0.5 * volatility * volatility) * tau) / (volatility * np.sqrt(tau))
     delta = np.exp(-dividend * tau) * norm.cdf(d1) 
     return delta
+
+def NaiveMonteCarloPricer(engine, option, data):
+    expiry = option.expiry
+    strike = option.strike
+    (spot, rate, vol, div) = data.get_data()
+    replications = engine.replications
+    dt = expiry / engine.time_steps
+    disc = np.exp(-(rate - div) * dt)
+    
+    z = np.random.normal(size = replications)
+    spotT = spot * np.exp((rate - div) * dt + vol * np.sqrt(dt) * z)
+    payoffT = option.payoff(spotT)
+
+    prc = payoffT.mean() * disc
+
+    return prc
     
 def ControlVariatePricer(engine, option, data):
     expiry = option.expiry
