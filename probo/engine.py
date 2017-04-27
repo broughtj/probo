@@ -41,9 +41,9 @@ def EuropeanBinomialPricer(pricing_engine, option, data):
     steps = pricing_engine.steps
     nodes = steps + 1
     dt = expiry / steps 
-    u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
-    d = np.exp((rate * dt) - volatility * np.sqrt(dt))
-    pu = (np.exp(rate * dt) - d) / (u - d)
+    u = np.exp(((rate - dividend) * dt) + volatility * np.sqrt(dt)) 
+    d = np.exp(((rate - dividend) * dt) - volatility * np.sqrt(dt))
+    pu = (np.exp((rate - dividend) * dt) - d) / (u - d)
     pd = 1 - pu
     disc = np.exp(-rate * expiry)
     spotT = 0.0
@@ -64,9 +64,9 @@ def AmericanBinomialPricer(pricingengine, option, data):
     steps = pricingengine.steps
     nodes = steps + 1
     dt = expiry / steps 
-    u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
-    d = np.exp((rate * dt) - volatility * np.sqrt(dt))
-    pu = (np.exp(rate * dt) - d) / (u - d)
+    u = np.exp(((rate - dividend) * dt) + volatility * np.sqrt(dt)) 
+    d = np.exp(((rate - dividend) * dt) - volatility * np.sqrt(dt))
+    pu = (np.exp((rate - dividend) * dt) - d) / (u - d)
     pd = 1 - pu
     disc = np.exp(-rate * dt)
     dpu = disc * pu
