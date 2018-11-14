@@ -32,7 +32,7 @@ class MarketData(object):
 
     @volatility.setter
     def volatility(self, new_volatility):
-        self.__volatility = new_olatility
+        self.__volatility = new_volatility
 
     @property
     def dividend(self):
