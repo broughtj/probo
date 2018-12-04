@@ -78,12 +78,12 @@ class ExoticPayoff(Payoff):
     def payoff(self, spot):
         return self.__payoff(self, spot)
     
-def arithmeticAsianCallPayoff(spot, strike):
+def arithmeticAsianCallPayoff(option, spot):
    ## Assume that spot is a NumPy ndarray
    ## Call the `mean` method to get the arithmetic average
    average = spot.mean()
-   return maximum(average - strike, 0.0)
+   return maximum(average - option.strike, 0.0)
 
-def arithmeticAsianPutPayoff(spot, strike):
+def arithmeticAsianPutPayoff(option, spot):
     average = spot.mean()
-    return maximum(strike - average, 0.0)
+    return maximum(option.strike - average, 0.0)

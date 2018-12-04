@@ -136,6 +136,11 @@ def NaiveMonteCarloPricer(engine, option, data):
 
     return prc
 
+def PathwiseNaiveMonteCarloPricer(engine, option, data):
+    ## You gotta put the code here!
+    ## See my AssetPaths function from class
+    pass
+
 def AntitheticMonteCarloPricer(engine, option, data):
     expiry = option.expiry
     strike = option.strike
