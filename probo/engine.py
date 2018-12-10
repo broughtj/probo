@@ -133,8 +133,9 @@ def NaiveMonteCarloPricer(engine, option, data):
     payoffT = option.payoff(spotT)
 
     prc = payoffT.mean() * disc
+    se = payoffT.std(ddof=1) / np.sqrt(replications)
 
-    return prc
+    return (prc, se)
 
 def PathwiseNaiveMonteCarloPricer(engine, option, data):
     ## You gotta put the code here!

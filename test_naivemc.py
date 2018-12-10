@@ -24,11 +24,11 @@ mcengine = MonteCarloEngine(nreps, steps, pricer)
 
 ## Calculate the price
 option1 = OptionFacade(thecall, mcengine, thedata)
-price1 = option1.price()
+price1, se1 = option1.price()
 print("The call price via Naive Monte Carlo is: {0:.3f}".format(price1))
 
 option2 = OptionFacade(theput, mcengine, thedata)
-price2 = option2.price()
+price2, se2 = option2.price()
 print("The put price via Naive Monte Carlo is: {0:.3f}".format(price2))
 
 
