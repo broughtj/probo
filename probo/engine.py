@@ -126,12 +126,16 @@ def NaiveMonteCarloPricer(engine, option, data):
     strike = option.strike
     (spot, rate, vol, div) = data.get_data()
     replications = engine.replications
+    time_steps = engine.time_steps
     dt = expiry / engine.time_steps
     disc = np.exp(-rate * dt)
-    
-    z = np.random.normal(size = replications)
-    spotT = spot * np.exp((rate - div - 0.5 * vol * vol) * dt + vol * np.sqrt(dt) * z)
-    payoffT = option.payoff(spotT)
+   
+    paths = np.empty((replications, time_steps))
+    for t in range(1, time_steps):
+        z = np.random.normal(size = replications)
+        paths[:,t]= paths[:,t-1] *  np.exp((rate - div - 0.5 * vol * vol) * dt + vol * np.sqrt(dt) * z)
+
+    payoffT = option.payoff(paths)
 
     prc = payoffT.mean() * disc
     se = payoffT.std(ddof=1) / np.sqrt(replications)

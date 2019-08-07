@@ -1,4 +1,5 @@
 import abc
+import numpy as np
 from numpy import mean, maximum 
 
 class Payoff(object, metaclass=abc.ABCMeta):
@@ -77,6 +78,14 @@ class ExoticPayoff(Payoff):
 
     def payoff(self, spot):
         return self.__payoff(self, spot)
+
+def lookbackCallPayoff(option, paths):
+    maxSpot = np.max(paths, axis=1)
+    return np.maximum(maxSpot - option.strike, 0.0)
+
+def lookbackPutPayoff(option, paths):
+    minSpot = np.min(paths, axis=1)
+    return np.maximum(option.strike - minSpot, 0.0)
     
 def arithmeticAsianCallPayoff(option, spot):
    ## Assume that spot is a NumPy ndarray

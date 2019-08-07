@@ -3,6 +3,7 @@ import enum
 import numpy as np
 from scipy.stats import binom
 from scipy.stats import norm
+from scipy.linalg import solve
 
 
 class PricingEngine(object, metaclass=abc.ABCMeta):
@@ -41,9 +42,9 @@ def EuropeanBinomialPricer(pricing_engine, option, data):
     steps = pricing_engine.steps
     nodes = steps + 1
     dt = expiry / steps 
-    u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
-    d = np.exp((rate * dt) - volatility * np.sqrt(dt))
-    pu = (np.exp(rate * dt) - d) / (u - d)
+    u = np.exp(((rate - dividend) * dt) + volatility * np.sqrt(dt)) 
+    d = np.exp(((rate - dividend) * dt) - volatility * np.sqrt(dt))
+    pu = (np.exp((rate - dividend) * dt) - d) / (u - d)
     pd = 1 - pu
     disc = np.exp(-rate * expiry)
     spotT = 0.0
@@ -64,9 +65,9 @@ def AmericanBinomialPricer(pricingengine, option, data):
     steps = pricingengine.steps
     nodes = steps + 1
     dt = expiry / steps 
-    u = np.exp((rate * dt) + volatility * np.sqrt(dt)) 
-    d = np.exp((rate * dt) - volatility * np.sqrt(dt))
-    pu = (np.exp(rate * dt) - d) / (u - d)
+    u = np.exp(((rate - dividend) * dt) + volatility * np.sqrt(dt)) 
+    d = np.exp(((rate - dividend) * dt) - volatility * np.sqrt(dt))
+    pu = (np.exp((rate - dividend) * dt) - d) / (u - d)
     pd = 1 - pu
     disc = np.exp(-rate * dt)
     dpu = disc * pu
@@ -125,16 +126,26 @@ def NaiveMonteCarloPricer(engine, option, data):
     strike = option.strike
     (spot, rate, vol, div) = data.get_data()
     replications = engine.replications
+    time_steps = engine.time_steps
     dt = expiry / engine.time_steps
     disc = np.exp(-rate * dt)
-    
-    z = np.random.normal(size = replications)
-    spotT = spot * np.exp((rate - div - 0.5 * vol * vol) * dt + vol * np.sqrt(dt) * z)
-    payoffT = option.payoff(spotT)
+   
+    paths = np.empty((replications, time_steps))
+    for t in range(1, time_steps):
+        z = np.random.normal(size = replications)
+        paths[:,t]= paths[:,t-1] *  np.exp((rate - div - 0.5 * vol * vol) * dt + vol * np.sqrt(dt) * z)
+
+    payoffT = option.payoff(paths)
 
     prc = payoffT.mean() * disc
+    se = payoffT.std(ddof=1) / np.sqrt(replications)
 
-    return prc
+    return (prc, se)
+
+def PathwiseNaiveMonteCarloPricer(engine, option, data):
+    ## You gotta put the code here!
+    ## See my AssetPaths function from class
+    pass
 
 def AntitheticMonteCarloPricer(engine, option, data):
     expiry = option.expiry
@@ -153,6 +164,9 @@ def AntitheticMonteCarloPricer(engine, option, data):
     prc = payoffT.mean() * disc
 
     return prc
+
+def ControlVariateAsianPrice(engine, option, data):
+    pass
 
     
 def ControlVariatePricer(engine, option, data):
@@ -185,9 +199,55 @@ def ControlVariatePricer(engine, option, data):
     #stderr = cash_flow_t.std() / np.sqrt(engine.replications)
     return price
 
-#class BlackScholesPayoffType(enum.Enum):
-#    call = 1
-#    put = 2
+def fhandles(x):
+    n = x.shape[0]
+    return np.vstack((np.ones(n), x , x * x)).T
+
+def OLSBeta(x, y):
+    xpx = np.dot(x.T, x)
+    xpy = np.dot(x.T, y)
+    return solve(xpx, xpy)
+
+def lsmPricer(engine, option, data):
+    S = np.array([[1.0, 1.09, 1.08, 1.34],
+              [1.0, 1.16, 1.26, 1.54],
+              [1.0, 1.22, 1.07, 1.03],
+              [1.0, .93 , .97 , .92],
+              [1.0, 1.11, 1.56, 1.52],
+              [1.0, .76 , .77 , .90],
+              [1.0, .92 , .84 , 1.01],
+              [1.0, .88 , 1.22, 1.34]])
+
+    expiry = option.expiry
+    K = option.strike
+    (spot, r, vol, div) = data.get_data()
+    nreps = engine.replications
+    nsteps = engine.time_steps
+    dt = expiry / nsteps
+    df = np.exp(-r * dt)
+    CF = np.zeros(S.shape)
+    CF[:,-1] = option.payoff(S[:,-1])
+    callT = option.payoff(S[:,-1])
+
+    for j in range(nsteps-1,0,-1):
+        ii = (S[:,j] < K)
+        x = S[ii,j]
+        y = CF[ii,j+1] * df
+        z = fhandles(x)
+        bhat = OLSBeta(z,y)
+        v = np.dot(z,bhat)
+        po = option.payoff(x)
+        jj = po < v
+        po[jj] = 0.0
+        CF[ii,j] = po
+        callT *= df
+        kk = CF[:,j] > 0.0
+        callT[kk] = CF[kk,j]
+
+    prc = callT.mean()
+    prc *= df
+
+    return prc
 
 class BlackScholesPricingEngine(PricingEngine):
     def __init__(self, payoff_type, pricer):

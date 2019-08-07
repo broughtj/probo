@@ -1,5 +1,6 @@
 import abc
-from numpy import maximum 
+import numpy as np
+from numpy import mean, maximum 
 
 class Payoff(object, metaclass=abc.ABCMeta):
     @property
@@ -53,3 +54,45 @@ def put_payoff(option, spot):
 
 
 
+class ExoticPayoff(Payoff):
+    def __init__(self, expiry, strike, payoff):
+        self.__expiry = expiry
+        self.__strike = strike
+        self.__payoff = payoff
+        
+    @property
+    def expiry(self):
+        return self.__expiry
+
+    @expiry.setter
+    def expiry(self, new_expiry):
+        self.__expiry = new_expiry
+    
+    @property 
+    def strike(self):
+        return self.__strike
+    
+    @strike.setter
+    def strike(self, new_strike):
+        self.__strike = new_strike
+
+    def payoff(self, spot):
+        return self.__payoff(self, spot)
+
+def lookbackCallPayoff(option, paths):
+    maxSpot = np.max(paths, axis=1)
+    return np.maximum(maxSpot - option.strike, 0.0)
+
+def lookbackPutPayoff(option, paths):
+    minSpot = np.min(paths, axis=1)
+    return np.maximum(option.strike - minSpot, 0.0)
+    
+def arithmeticAsianCallPayoff(option, spot):
+   ## Assume that spot is a NumPy ndarray
+   ## Call the `mean` method to get the arithmetic average
+   average = spot.mean()
+   return maximum(average - option.strike, 0.0)
+
+def arithmeticAsianPutPayoff(option, spot):
+    average = spot.mean()
+    return maximum(option.strike - average, 0.0)
