@@ -1,4 +1,5 @@
 from probo.marketdata import MarketData
+from probo.payoff import VanillaPayoff, call_payoff, put_payoff
 from probo.payoff import ExoticPayoff, lookbackCallPayoff, lookbackPutPayoff
 from probo.engine import MonteCarloEngine, NaiveMonteCarloPricer, PathwiseNaiveMonteCarloPricer
 from probo.facade import OptionFacade
@@ -18,7 +19,7 @@ theput = ExoticPayoff(expiry, strike, lookbackPutPayoff)
 
 ## Set up Naive Monte Carlo
 nreps = 100000
-steps = 3
+steps = 252
 pricer = NaiveMonteCarloPricer
 #pricer = PathwiseNaiveMonteCarloPricer
 mcengine = MonteCarloEngine(nreps, steps, pricer)

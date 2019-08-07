@@ -131,6 +131,7 @@ def NaiveMonteCarloPricer(engine, option, data):
     disc = np.exp(-rate * dt)
    
     paths = np.empty((replications, time_steps))
+    paths[:, 0] = spot
     for t in range(1, time_steps):
         z = np.random.normal(size = replications)
         paths[:,t]= paths[:,t-1] *  np.exp((rate - div - 0.5 * vol * vol) * dt + vol * np.sqrt(dt) * z)
