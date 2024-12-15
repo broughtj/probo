@@ -17,7 +17,7 @@ thecall = VanillaPayoff(expiry, strike, call_payoff)
 theput = VanillaPayoff(expiry, strike, put_payoff)
 
 ## Set up the European Binomial pricer
-steps = 3 
+steps = 3
 pricer = EuropeanBinomialPricer
 binomengine = BinomialPricingEngine(steps, pricer) 
 
